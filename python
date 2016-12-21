@@ -1,0 +1,89 @@
+# -*- coding:utf-8 -*-
+
+import os
+import os.path
+import shutil
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+subjects_name = 'patient1'  # 定义受试者文件夹名
+
+def move(src, dst):
+    real_dst = dst
+    if os.path.isdir(dst):
+        real_dst = os.path.join(dst, _basename(src))
+        if os.path.exists(real_dst):
+            raise Error, "Destination path '%s' already exists" % real_dst
+    try:
+        os.rename(src, real_dst)
+    except OSError:
+        if os.path.isdir(src):
+            if destinsrc(src, dst):
+                raise Error, "Cannot move a directory '%s' into itself '%s'." % (src, dst)
+            copytree(src, real_dst, symlinks=True)
+            rmtree(src)
+        else:
+            copy2(src, real_dst)
+            os.unlink(src)
+
+
+def mkdir(path):
+    # 引入模块
+    import os
+
+    # 去除首位空格
+    path = path.strip()
+    # 去除尾部 \ 符号
+    path = path.rstrip("\\")
+
+    # 判断路径是否存在
+    # 存在     True
+    # 不存在   False
+    isExists = os.path.exists(path)
+
+    # 判断结果
+    if not isExists:
+        # 如果不存在则创建目录
+        print path + ' 创建成功'
+        # 创建目录操作函数
+        os.makedirs(path)
+        return True
+    else:
+        # 如果目录存在则不创建，并提示目录已存在
+        print path + ' 目录已存在'
+        return False
+
+#创建文件夹
+dst_folder = 'D:\\testDir\\' + subjects_name
+mkdir(dst_folder)
+
+for count in range(0, 6):
+    # 移动文件到指定目录
+    # src = 'C:\\Users\\Lab User\\Desktop\\'+str(count)+'\\car  game_Datadata.csv'
+    # dst = 'D:\\testDir\\' + subjects_name + '\\' + str(count*0.2) + '.csv'
+    # shutil.move(src, dst)
+
+    # 绘图
+    filename = 'D:\\testDir\\' + subjects_name + '\\' + str(count*0.2) + '.csv'
+    data_array = np.loadtxt(filename,      # 文件名
+                            delimiter=',', # 分隔符
+                            dtype=float,     # 数据类型
+                            usecols=(1,2)) # 指定读取的列索引号
+    actual_position = data_array[:, 0]
+    road_position = data_array[:, 1]
+    relative_position = actual_position - road_position  # 实际位置相对于道路位置
+    title_name = 'disturbance' + str(count*0.2)
+    bins_number = int((max(relative_position) - min(relative_position))/0.3)  # 直方图宽度相同
+    plt.subplot(2, 3, count + 1)
+    plt.xlabel('relative_position')
+    plt.ylabel('points')
+    plt.title(title_name)
+    plt.xlim([-10, 10])
+    plt.hist(relative_position, bins=bins_number, color='b', alpha=0.3)
+
+plt.show()
+
+
+
+
